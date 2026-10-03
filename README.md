@@ -145,36 +145,36 @@ If you want to charge for your builds, this is the server side. Two Python proce
 ## How the stack works end-to-end
 
 ```
-                ┌──────────────────────────────── Pixel 7 ──────────────────────┐
-                │                                                               │
-                │  KernelSU late_start boot hook                                │
-                │    │                                                          │
-                │    ▼                                                          │
-                │  service.sh                                                   │
-                │    - bind-mount empty VINTF over the stock Lyric manifest     │
-                │    - kill vendor.camera-provider-2-7-google                   │
-                │    - launch fake_camera_provider (LD_PRELOAD both helpers)    │
-                │    - setprop ctl.restart cameraserver                         │
-                │    - start rotation_bridge.sh and fakehal_watchdog.sh         │
-                │                                                               │
-                │  fake_camera_provider  (AIDL vendor HAL)                      │
-                │    - registers ICameraProvider/internal/0                     │
-                │    - advertises 2 cameras: internal/0 (back), internal/1 (front)
-                │    - reads fakehal.conf on every capture                      │
-                │    - frames come from one of three sources:                   │
-                │                                                               │
-                │        (a) MP4 loop         (b) A/B slot swap   (c) TCP stream│
-                │        /data/local/tmp/     active_slot=A|B     port 9080    │
-                │        fake_video.mp4                           "FHAL" + NV12 │
-                │                                                               │
-                │    - per-frame pipeline: decode → randomize metadata →        │
-                │      add noise + FPN → vignette → rolling-shutter row skew → │
-                │      gyro warp → write to gralloc buffer (NV12/NV21/AFBC)    │
-                │                                                               │
-                │  cameraserver → every app that opens the camera               │
-                │                                                               │
-                │  OpenCamera / Chrome / KYC SDK / video-call app → shows fake  │
-                └───────────────────────────────────────────────────────────────┘
+                ┌──────────────────────────────── Pixel 7 ─────────────────────────┐
+                │                                                                  │ 
+                │  KernelSU late_start boot hook                                   │   
+                │    │                                                             │
+                │    ▼                                                             │
+                │  service.sh                                                      │
+                │    - bind-mount empty VINTF over the stock Lyric manifest        │
+                │    - kill vendor.camera-provider-2-7-google                      │
+                │    - launch fake_camera_provider (LD_PRELOAD both helpers)       │
+                │    - setprop ctl.restart cameraserver                            │
+                │    - start rotation_bridge.sh and fakehal_watchdog.sh            │
+                │                                                                  │
+                │  fake_camera_provider  (AIDL vendor HAL)                         │
+                │    - registers ICameraProvider/internal/0                        │
+                │    - advertises 2 cameras: internal/0 (back), internal/1 (front) │
+                │    - reads fakehal.conf on every capture                         │
+                │    - frames come from one of three sources:                      │
+                │                                                                  │
+                │        (a) MP4 loop         (b) A/B slot swap   (c) TCP stream   │
+                │        /data/local/tmp/     active_slot=A|B     port 9080        │
+                │        fake_video.mp4                           "FHAL" + NV12    │
+                │                                                                  │
+                │    - per-frame pipeline: decode → randomize metadata →           │
+                │      add noise + FPN → vignette → rolling-shutter row skew →     │
+                │      gyro warp → write to gralloc buffer (NV12/NV21/AFBC)        │
+                │                                                                  │
+                │  cameraserver → every app that opens the camera                  │
+                │                                                                  │
+                │  OpenCamera / Chrome / KYC SDK / video-call app → shows fake     │
+                └──────────────────────────────────────────────────────────────────┘
 ```
 
 ### The VINTF hijack
