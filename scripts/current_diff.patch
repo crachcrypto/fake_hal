@@ -1,0 +1,129 @@
+diff --git a/src/FakeCameraDevice.cpp b/src/FakeCameraDevice.cpp
+index d81af46..4e8ff2d 100644
+--- a/src/FakeCameraDevice.cpp
++++ b/src/FakeCameraDevice.cpp
+@@ -435,8 +435,33 @@ static android::CameraMetadata buildPixel7MainCharacteristics() {
+         ANDROID_CONTROL_AE_COMPENSATION_STEP,
+         ANDROID_FLASH_INFO_AVAILABLE,
+         ANDROID_SYNC_MAX_LATENCY,
++        // --- GCam compatibility keys ---
++        ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES,
++        ANDROID_EDGE_AVAILABLE_EDGE_MODES,
++        ANDROID_HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES,
++        ANDROID_TONEMAP_AVAILABLE_TONE_MAP_MODES,
++        ANDROID_TONEMAP_MAX_CURVE_POINTS,
++        ANDROID_SHADING_AVAILABLE_MODES,
++        ANDROID_STATISTICS_INFO_AVAILABLE_LENS_SHADING_MAP_MODES,
++        ANDROID_STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES,
++        ANDROID_SENSOR_INFO_LENS_SHADING_APPLIED,
++        ANDROID_CONTROL_AE_LOCK_AVAILABLE,
++        ANDROID_CONTROL_AWB_LOCK_AVAILABLE,
++        // --- GCam Gcam-engine color-calibration keys ---
++        ANDROID_SENSOR_REFERENCE_ILLUMINANT1,
++        ANDROID_SENSOR_REFERENCE_ILLUMINANT2,
++        ANDROID_SENSOR_CALIBRATION_TRANSFORM1,
++        ANDROID_SENSOR_CALIBRATION_TRANSFORM2,
++        ANDROID_SENSOR_COLOR_TRANSFORM1,
++        ANDROID_SENSOR_COLOR_TRANSFORM2,
++        ANDROID_SENSOR_FORWARD_MATRIX1,
++        ANDROID_SENSOR_FORWARD_MATRIX2,
++        ANDROID_SENSOR_BLACK_LEVEL_PATTERN,
++        ANDROID_SENSOR_INFO_WHITE_LEVEL,
++        ANDROID_SENSOR_MAX_ANALOG_SENSITIVITY,
+     };
+-    meta.update(ANDROID_REQUEST_AVAILABLE_CHARACTERISTICS_KEYS, charKeys, 25);
++    meta.update(ANDROID_REQUEST_AVAILABLE_CHARACTERISTICS_KEYS, charKeys,
++                sizeof(charKeys) / sizeof(charKeys[0]));
+ 
+     // Control mode
+     uint8_t ctrlModes[] = {ANDROID_CONTROL_MODE_OFF, ANDROID_CONTROL_MODE_AUTO};
+@@ -469,6 +494,89 @@ static android::CameraMetadata buildPixel7MainCharacteristics() {
+     uint8_t tsSource = ANDROID_SENSOR_INFO_TIMESTAMP_SOURCE_REALTIME;
+     meta.update(ANDROID_SENSOR_INFO_TIMESTAMP_SOURCE, &tsSource, 1);
+ 
++    // --- GCam compatibility keys (Google Camera reads these unconditionally at init) ---
++    // Color correction aberration modes
++    uint8_t aberrationModes[] = {ANDROID_COLOR_CORRECTION_ABERRATION_MODE_OFF,
++                                 ANDROID_COLOR_CORRECTION_ABERRATION_MODE_FAST};
++    meta.update(ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES, aberrationModes, 2);
++
++    // Edge modes
++    uint8_t edgeModes[] = {ANDROID_EDGE_MODE_OFF, ANDROID_EDGE_MODE_FAST};
++    meta.update(ANDROID_EDGE_AVAILABLE_EDGE_MODES, edgeModes, 2);
++
++    // Hot pixel modes
++    uint8_t hotPixelModes[] = {ANDROID_HOT_PIXEL_MODE_OFF, ANDROID_HOT_PIXEL_MODE_FAST};
++    meta.update(ANDROID_HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES, hotPixelModes, 2);
++
++    // Tonemap modes + max curve points
++    uint8_t tonemapModes[] = {ANDROID_TONEMAP_MODE_FAST, ANDROID_TONEMAP_MODE_HIGH_QUALITY};
++    meta.update(ANDROID_TONEMAP_AVAILABLE_TONE_MAP_MODES, tonemapModes, 2);
++    int32_t maxCurvePoints = 64;
++    meta.update(ANDROID_TONEMAP_MAX_CURVE_POINTS, &maxCurvePoints, 1);
++
++    // Shading modes
++    uint8_t shadingModes[] = {ANDROID_SHADING_MODE_OFF, ANDROID_SHADING_MODE_FAST};
++    meta.update(ANDROID_SHADING_AVAILABLE_MODES, shadingModes, 2);
++
++    // Lens shading map modes
++    uint8_t lensShadingMapModes[] = {ANDROID_STATISTICS_LENS_SHADING_MAP_MODE_OFF};
++    meta.update(ANDROID_STATISTICS_INFO_AVAILABLE_LENS_SHADING_MAP_MODES, lensShadingMapModes, 1);
++
++    // Hot pixel map modes
++    uint8_t hotPixelMapModes[] = {ANDROID_STATISTICS_HOT_PIXEL_MAP_MODE_OFF};
++    meta.update(ANDROID_STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES, hotPixelMapModes, 1);
++
++    // Lens shading applied
++    uint8_t lensShadingApplied = ANDROID_SENSOR_INFO_LENS_SHADING_APPLIED_FALSE;
++    meta.update(ANDROID_SENSOR_INFO_LENS_SHADING_APPLIED, &lensShadingApplied, 1);
++
++    // Available AE lock / AWB lock
++    uint8_t aeLockAvail = ANDROID_CONTROL_AE_LOCK_AVAILABLE_TRUE;
++    meta.update(ANDROID_CONTROL_AE_LOCK_AVAILABLE, &aeLockAvail, 1);
++    uint8_t awbLockAvail = ANDROID_CONTROL_AWB_LOCK_AVAILABLE_TRUE;
++    meta.update(ANDROID_CONTROL_AWB_LOCK_AVAILABLE, &awbLockAvail, 1);
++
++    // --- GCam Gcam-engine keys (color calibration + sensor levels) ---
++    // Without these the Gcam HDR+ engine (Gcam.g()) returns null -> NPE.
++    // Reference illuminants (D65 / Standard-A) as int-enum bytes.
++    uint8_t refIllum1 = ANDROID_SENSOR_REFERENCE_ILLUMINANT1_D65;
++    meta.update(ANDROID_SENSOR_REFERENCE_ILLUMINANT1, &refIllum1, 1);
++    uint8_t refIllum2 = ANDROID_SENSOR_REFERENCE_ILLUMINANT1_STANDARD_A;
++    meta.update(ANDROID_SENSOR_REFERENCE_ILLUMINANT2, &refIllum2, 1);
++
++    // Rational matrices (numerator/denominator pairs). Identity-ish sane defaults.
++    // calibrationTransform: 3x3 identity
++    camera_metadata_rational_t calib[] = {
++        {1,1},{0,1},{0,1}, {0,1},{1,1},{0,1}, {0,1},{0,1},{1,1}};
++    meta.update(ANDROID_SENSOR_CALIBRATION_TRANSFORM1, calib, 9);
++    meta.update(ANDROID_SENSOR_CALIBRATION_TRANSFORM2, calib, 9);
++
++    // colorTransform: sRGB-ish 3x3 (maps device RGB -> XYZ-like); sane defaults
++    camera_metadata_rational_t colorXform[] = {
++        {3209,1024},{-1655,1024},{-502,1024},
++        {-765,1024},{2000,1024},{-206,1024},
++        {30,1024},{-390,1024},{1436,1024}};
++    meta.update(ANDROID_SENSOR_COLOR_TRANSFORM1, colorXform, 9);
++    meta.update(ANDROID_SENSOR_COLOR_TRANSFORM2, colorXform, 9);
++
++    // forwardMatrix: 3x3 mapping to D50 XYZ; sane defaults (rows sum ~ white point)
++    camera_metadata_rational_t fwd[] = {
++        {446,1024},{394,1024},{124,1024},
++        {214,1024},{700,1024},{110,1024},
++        {10,1024},{79,1024},{735,1024}};
++    meta.update(ANDROID_SENSOR_FORWARD_MATRIX1, fwd, 9);
++    meta.update(ANDROID_SENSOR_FORWARD_MATRIX2, fwd, 9);
++
++    // Black level pattern (R, Gr, Gb, B) and white level.
++    int32_t blackLevel[] = {64, 64, 64, 64};
++    meta.update(ANDROID_SENSOR_BLACK_LEVEL_PATTERN, blackLevel, 4);
++    int32_t whiteLevel = 1023;
++    meta.update(ANDROID_SENSOR_INFO_WHITE_LEVEL, &whiteLevel, 1);
++
++    // Max analog sensitivity (Gcam reads this for noise model).
++    int32_t maxAnalogSens = 800;
++    meta.update(ANDROID_SENSOR_MAX_ANALOG_SENSITIVITY, &maxAnalogSens, 1);
++
+     return meta;
+ }
+ 

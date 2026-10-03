@@ -1,0 +1,6 @@
+id=FakeHAL
+name=FakeHAL v7.4
+version=v7.4
+versionCode=740
+author=FakeHAL
+description=AIDL camera HAL for Pixel 7 Android 13. Fixed VINTF duplicate conflict and stock provider restart.

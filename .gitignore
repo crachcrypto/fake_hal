@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# Runtime state
+*.pid
+*.log
+keys.json
+users.json
+*.json.bak_*
+
+# Build outputs
+out_fake_hal/
+build/
+build_v*/
+build_audit*/
+*.o
+*.d
+*.a
+
+# Backups
+*.bak
+*.bak_*
+
+# Local media
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+
+# Editor junk
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

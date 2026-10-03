@@ -1,0 +1,13 @@
+fd917440d1595471dbb05783af537eb7  afbc_encoder.so
+5eca1dfbab659bc30eef46b63546d870  DEPLOY.sh
+d40806d5922ed67ccc5d491e118641f1  fake_camera_hal.xml
+4fa9b37f2f9b7ea94c60223121ba8768  fake_camera_provider
+29c81e5265ebd6b881e073320b705474  fake_camera_provider.bak_pre_gcam
+7c3f5ced68bbe58a94c98aa586455def  fakehal.conf
+b2dc85b7f2d469bee856487071d7e7f5  fakehal_gate.sh
+6f85931bdeb77bd47a13574e29c3c6e5  fake_video_front.mp4
+6f85931bdeb77bd47a13574e29c3c6e5  fake_video.mp4
+6f85931bdeb77bd47a13574e29c3c6e5  fake_video.slot_a.mp4
+6f85931bdeb77bd47a13574e29c3c6e5  fake_video.slot_b.mp4
+ff5b70c1e410d820046ec9f3b3b85a75  gralloc_uv_fix.so
+3951a6a1cae4edf2040f40af8f9824d8  pin_clean.jpg
